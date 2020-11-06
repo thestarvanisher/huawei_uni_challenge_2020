@@ -2,12 +2,18 @@ class Pennant:
     masterNodeValue = None
     left = None
     right = None
-    def __init__(self, val):
+    def __init__(self, val=None):
         self.masterNodeValue = val
 
     def joinPennant(self, pennant):
         pennant.right = self.left
         self.left = pennant
+
+    def splitPennant(self):
+        p = self.left
+        self.left = p.right
+        p.right = None
+        return self, p
 
     def printPennant(self):
         lv = [self]
@@ -20,7 +26,8 @@ class Pennant:
                     next_lv.append(i.right)
                 print(i.masterNodeValue, end=" ")
             lv = next_lv
-            print("\n")
+            #print("\n")
+            print("")
 
 if __name__ == "__main__":
     p1 = Pennant(1)
