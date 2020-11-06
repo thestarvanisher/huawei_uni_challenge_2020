@@ -1,35 +1,34 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Parallel_BFS {
     static final int SPLIT_CONSTANT = 10000;
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         ArrayList<Integer>[] adj = parseInput("C:\\Users\\Joe\\Desktop\\HPC_Challenge\\src\\competition_data.txt");
+
+        System.out.println(adj.length);
 
         System.out.println("Started BFS");
 
         long start;
         long end;
 
-//        start = System.nanoTime();
-//        System.out.println(bfs(adj));
-//        end = System.nanoTime();
-//
-//        System.out.println(end - start);
-//
-//        start = System.nanoTime();
-//        System.out.println(bfs_2(adj));
-//        end = System.nanoTime();
+        start = System.currentTimeMillis();
+        ArrayList<Integer> answer = bfs_s(adj);
+        end = System.currentTimeMillis();
 
-//        System.out.println(end - start);
-
-        start = System.nanoTime();
-        System.out.println(bfs_s(adj));
-        end = System.nanoTime();
+        FileWriter writer = new FileWriter("ans.txt");
+        writer.write(answer.toString().replace(" ", ""));
+        writer.close();
 
         System.out.println(end - start);
+
+        System.out.println(answer);
     }
 
     static ArrayList<Integer>[] parseInput(String filename) throws FileNotFoundException {
@@ -138,16 +137,16 @@ public class Parallel_BFS {
         List<Integer> answer = Collections.synchronizedList(new ArrayList<>());
 
         int start = 0;
-        List<Integer> level = Collections.synchronizedList(new ArrayList<>());
+        Set<Integer> level = ConcurrentHashMap.newKeySet();
         level.add(start);
 
-        List<Integer> nextLevel;
+        Set<Integer> nextLevel;
 
         boolean[] visited = new boolean[adj.length];
         Arrays.fill(visited, false);
 
         while (level.size() > 0) {
-            nextLevel = Collections.synchronizedList(new ArrayList<>());
+            nextLevel = ConcurrentHashMap.newKeySet();
 
             try {
                 processLevel(adj, level, nextLevel, visited, answer);
@@ -155,21 +154,20 @@ public class Parallel_BFS {
                 e.printStackTrace();
             }
 
-            System.out.println("New Level | " + nextLevel.size());
-
             level = nextLevel;
         }
 
         return new ArrayList<>(answer);
     }
 
-    static void processLevel(ArrayList<Integer>[] adj, List<Integer> level, List<Integer> nextLevel, boolean[] visited, List<Integer> answer) throws InterruptedException {
+    static void processLevel(ArrayList<Integer>[] adj, Set<Integer> level, Set<Integer> nextLevel, boolean[] visited, List<Integer> answer) throws InterruptedException {
         if (level.size() > SPLIT_CONSTANT) {
-            List<Integer>[] partions = split(level);
+            Set<Integer>[] partions = split(level);
 
             Thread t1 = new Thread(() -> {
                 try {
                     processLevel(adj, partions[0], nextLevel, visited, answer);
+                    processLevel(adj, partions[1], nextLevel, visited, answer);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -177,23 +175,11 @@ public class Parallel_BFS {
             t1.start();
 
             t1.join();
-
-            Thread t2 = new Thread(() -> {
-                try {
-                    processLevel(adj, partions[1], nextLevel, visited, answer);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            });
-            t2.start();
-
-            t2.join();
         } else {
             for (int node : level) {
-                visited[node] = true;
-
                 if (!visited[node]) {
                     answer.add(node);
+                    visited[node] = true;
                 }
 
                 for (int j = 0; j < adj[node].size(); j++) {
@@ -207,25 +193,32 @@ public class Parallel_BFS {
         }
     }
 
-    static List<Integer>[] split(List<Integer> list) {
-        List<Integer> first = Collections.synchronizedList(new ArrayList<>());
+    static Set<Integer>[] split(Set<Integer> list) {
+        Set<Integer> first = ConcurrentHashMap.newKeySet();
 
-        List<Integer> second = Collections.synchronizedList(new ArrayList<>());
+        Set<Integer> second = ConcurrentHashMap.newKeySet();
 
         // get size of the list
-        int size = list.size();
+        int partitionSize = Math.floorDiv(list.size(), 2);
 
         // First size)/2 element copy into list
         // first and rest second list
-        for (int i = 0; i < size / 2; i++)
-            first.add(list.get(i));
+
+        Iterator<Integer> iterator = list.iterator();
+
+        while ((partitionSize-- > 0) && iterator.hasNext()) {
+            first.add(iterator.next());
+            iterator.remove();
+        }
 
         // Second size)/2 element copy into list
         // first and rest second list
-        for (int i = size / 2; i < size; i++)
-            second.add(list.get(i));
+        while ((partitionSize-- > 0) && iterator.hasNext()) {
+            second.add(iterator.next());
+            iterator.remove();
+        }
 
         // return a List of array
-        return new List[]{first, second};
+        return new Set[]{first, second};
     }
 }
