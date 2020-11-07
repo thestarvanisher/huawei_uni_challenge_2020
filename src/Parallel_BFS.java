@@ -3,33 +3,55 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Parallel_BFS {
     static final int SPLIT_CONSTANT = 128;
 
+    static final int NUM_NODES = 5000;
+    static final double PROBABILITY = 0.05;
+
     public static void main(String[] args) throws IOException {
-//        ArrayList<Integer>[] adj = parseInput(args[0]);
-        ArrayList<Integer>[] adj = generateGraph(10000, 0.05);
-
-        System.out.println(adj.length);
-
-        System.out.println("Started BFS");
-
         long start;
         long end;
+        FileWriter fileWriter;
+        ArrayList<Integer> answer;
 
+        System.out.println("--- Graph Generation ---");
+
+//        ArrayList<Integer>[] adj = parseInput(args[0]);
+        ArrayList<Integer>[] adj = generateGraph(NUM_NODES, PROBABILITY);
+
+        System.out.println("--- Text Dump ---");
+        fileWriter = new FileWriter(String.format("%d.txt", NUM_NODES));
+        fileWriter.write(getOutput(adj));
+        fileWriter.close();
+
+        System.out.println("--- Sequential BFS ---");
         start = System.currentTimeMillis();
-        ArrayList<Integer> answer = bfs_s(adj);
+        answer = bfs_2(adj);
         end = System.currentTimeMillis();
 
-        FileWriter writer = new FileWriter("ans.txt");
-        writer.write(answer.toString().replace(" ", ""));
-        writer.close();
+        System.out.println(answer);
+        System.out.println(String.format("%d Output Nodes", answer.size()));
+        System.out.println(String.format("%dms", end - start));
 
-        System.out.println(end - start);
+        System.out.println("--- Threaded BFS ---");
+        start = System.currentTimeMillis();
+        answer = bfs_s(adj);
+        end = System.currentTimeMillis();
 
         System.out.println(answer);
+        System.out.println(String.format("%d Output Nodes", answer.size()));
+        System.out.println(String.format("%dms", end - start));
+
+        System.out.println("--- Text Dump ---");
+        fileWriter = new FileWriter("ans.txt");
+        fileWriter.write(answer.toString().replace(" ", ""));
+        fileWriter.close();
+
+        System.out.println("--- Done ---");
 
 //        int[] correctAnswer = new int[]{0, 1, 2, 4, 3, 20, 6, 79, 60, 78, 62, 151, 7, 14, 31, 45, 32, 47, 95, 113, 146, 166, 148, 189, 8, 81, 33, 116, 34, 117, 96, 181, 150, 211, 152, 212, 16, 165, 67, 164, 69, 188, 123, 226, 196, 255, 197, 256, 101, 121, 138, 198, 140, 216, 225, 266, 239, 278, 253, 281, 104, 179, 142, 200, 144, 209, 227, 267, 250, 286, 251, 287, 5, 9, 10, 115, 11, 18, 93, 111, 12, 97, 94, 218, 21, 178, 206, 261, 108, 208, 247, 271, 110, 210, 265, 272, 13, 22, 43, 59, 44, 61, 23, 36, 129, 145, 130, 147, 24, 114, 131, 149, 132, 191, 38, 207, 184, 205, 185, 244, 219, 262, 171, 274, 241, 277, 221, 263, 243, 280, 245, 283, 17, 28, 29, 41, 30, 169, 119, 249, 229, 268, 231, 269, 15, 25, 46, 63, 48, 64, 77, 167, 75, 190, 168, 201, 26, 82, 162, 176, 163, 199, 203, 270, 254, 282, 258, 284, 19, 80, 112, 202, 177, 187, 260, 285, 37, 51, 57, 74, 58, 76, 52, 248, 183, 259, 182, 257, 42, 180, 215, 264, 27, 40, 49, 65, 50, 68, 102, 122, 173, 195, 175, 235, 86, 100, 125, 137, 126, 139, 213, 224, 233, 238, 234, 273, 87, 103, 127, 141, 128, 143, 214, 220, 236, 276, 237, 279, 35, 85, 66, 217, 91, 107, 222, 228, 92, 109, 223, 230, 53, 71, 83, 98, 84, 174, 135, 155, 156, 170, 157, 172, 136, 158, 159, 242, 160, 275, 99, 118, 133, 153, 134, 154, 39, 54, 55, 72, 56, 186, 120, 232, 194, 246, 193, 240, 73, 161, 204, 252, 70, 88, 89, 105, 90, 192, 106, 124};
 //        int[] computedSolution = answer.stream().mapToInt(i -> i).toArray();
@@ -74,33 +96,8 @@ public class Parallel_BFS {
         return adj;
     }
 
-    static ArrayList<Integer> bfs(ArrayList<Integer>[] adj) {
-        ArrayList<Integer> answer = new ArrayList<>();
-
-        int start = 0;
-        ArrayList<Integer> level = new ArrayList<>();
-
-        level.add(start);
-
-        boolean[] visited = new boolean[adj.length];
-        Arrays.fill(visited, false);
-
-        while (level.size() > 0) {
-            int node = level.remove(0);
-
-            if (!visited[node]) {
-                answer.add(node);
-                visited[node] = true;
-            }
-
-            adj[node].forEach(a -> {
-                if (!visited[a]) {
-                    level.add(a);
-                }
-            });
-        }
-
-        return answer;
+    static String getOutput(ArrayList<Integer>[] adj) {
+        return IntStream.range(0, adj.length).filter(a -> adj[a].size() > 0).mapToObj(a -> adj[a].stream().map(b -> String.format("(%d,%d)", a, b)).collect(Collectors.joining(","))).collect(Collectors.joining(",", "[", "]"));
     }
 
     static ArrayList<Integer> bfs_2(ArrayList<Integer>[] adj) {
