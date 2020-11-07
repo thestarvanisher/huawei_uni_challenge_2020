@@ -3,13 +3,14 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 public class Parallel_BFS {
-    static final int SPLIT_CONSTANT = 10000;
+    static final int SPLIT_CONSTANT = 128;
 
     public static void main(String[] args) throws IOException {
-        ArrayList<Integer>[] adj = parseInput("C:\\Users\\Joe\\Desktop\\HPC_Challenge\\src\\competition_data.txt");
+//        ArrayList<Integer>[] adj = parseInput(args[0]);
+        ArrayList<Integer>[] adj = generateGraph(10000, 0.05);
 
         System.out.println(adj.length);
 
@@ -29,6 +30,11 @@ public class Parallel_BFS {
         System.out.println(end - start);
 
         System.out.println(answer);
+
+//        int[] correctAnswer = new int[]{0, 1, 2, 4, 3, 20, 6, 79, 60, 78, 62, 151, 7, 14, 31, 45, 32, 47, 95, 113, 146, 166, 148, 189, 8, 81, 33, 116, 34, 117, 96, 181, 150, 211, 152, 212, 16, 165, 67, 164, 69, 188, 123, 226, 196, 255, 197, 256, 101, 121, 138, 198, 140, 216, 225, 266, 239, 278, 253, 281, 104, 179, 142, 200, 144, 209, 227, 267, 250, 286, 251, 287, 5, 9, 10, 115, 11, 18, 93, 111, 12, 97, 94, 218, 21, 178, 206, 261, 108, 208, 247, 271, 110, 210, 265, 272, 13, 22, 43, 59, 44, 61, 23, 36, 129, 145, 130, 147, 24, 114, 131, 149, 132, 191, 38, 207, 184, 205, 185, 244, 219, 262, 171, 274, 241, 277, 221, 263, 243, 280, 245, 283, 17, 28, 29, 41, 30, 169, 119, 249, 229, 268, 231, 269, 15, 25, 46, 63, 48, 64, 77, 167, 75, 190, 168, 201, 26, 82, 162, 176, 163, 199, 203, 270, 254, 282, 258, 284, 19, 80, 112, 202, 177, 187, 260, 285, 37, 51, 57, 74, 58, 76, 52, 248, 183, 259, 182, 257, 42, 180, 215, 264, 27, 40, 49, 65, 50, 68, 102, 122, 173, 195, 175, 235, 86, 100, 125, 137, 126, 139, 213, 224, 233, 238, 234, 273, 87, 103, 127, 141, 128, 143, 214, 220, 236, 276, 237, 279, 35, 85, 66, 217, 91, 107, 222, 228, 92, 109, 223, 230, 53, 71, 83, 98, 84, 174, 135, 155, 156, 170, 157, 172, 136, 158, 159, 242, 160, 275, 99, 118, 133, 153, 134, 154, 39, 54, 55, 72, 56, 186, 120, 232, 194, 246, 193, 240, 73, 161, 204, 252, 70, 88, 89, 105, 90, 192, 106, 124};
+//        int[] computedSolution = answer.stream().mapToInt(i -> i).toArray();
+
+//        org.junit.jupiter.api.Assertions.assertArrayEquals(computedSolution, correctAnswer, "Incorrect Solution.");
     }
 
     static ArrayList<Integer>[] parseInput(String filename) throws FileNotFoundException {
@@ -137,19 +143,22 @@ public class Parallel_BFS {
         List<Integer> answer = Collections.synchronizedList(new ArrayList<>());
 
         int start = 0;
-        Set<Integer> level = ConcurrentHashMap.newKeySet();
+        ArrayList<Integer> level = new ArrayList<>();
         level.add(start);
 
-        Set<Integer> nextLevel;
+        ArrayList<Integer> nextLevel;
 
         boolean[] visited = new boolean[adj.length];
         Arrays.fill(visited, false);
 
+        boolean[] added = new boolean[adj.length];
+        Arrays.fill(visited, false);
+
         while (level.size() > 0) {
-            nextLevel = ConcurrentHashMap.newKeySet();
+            nextLevel = new ArrayList<>();
 
             try {
-                processLevel(adj, level, nextLevel, visited, answer);
+                processLevel(adj, level, nextLevel, visited, answer, added);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -160,14 +169,14 @@ public class Parallel_BFS {
         return new ArrayList<>(answer);
     }
 
-    static void processLevel(ArrayList<Integer>[] adj, Set<Integer> level, Set<Integer> nextLevel, boolean[] visited, List<Integer> answer) throws InterruptedException {
+    static void processLevel(ArrayList<Integer>[] adj, ArrayList<Integer> level, ArrayList<Integer> nextLevel, boolean[] visited, List<Integer> answer, boolean[] added) throws InterruptedException {
         if (level.size() > SPLIT_CONSTANT) {
-            Set<Integer>[] partions = split(level);
+            ArrayList<Integer>[] partions = split(level);
 
             Thread t1 = new Thread(() -> {
                 try {
-                    processLevel(adj, partions[0], nextLevel, visited, answer);
-                    processLevel(adj, partions[1], nextLevel, visited, answer);
+                    processLevel(adj, partions[0], nextLevel, visited, answer, added);
+                    processLevel(adj, partions[1], nextLevel, visited, answer, added);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -185,7 +194,9 @@ public class Parallel_BFS {
                 for (int j = 0; j < adj[node].size(); j++) {
                     int a = adj[node].get(j);
 
-                    if (!visited[a]) {
+                    if (!visited[a] && !added[a]) {
+                        added[a] = true;
+
                         nextLevel.add(a);
                     }
                 }
@@ -193,32 +204,49 @@ public class Parallel_BFS {
         }
     }
 
-    static Set<Integer>[] split(Set<Integer> list) {
-        Set<Integer> first = ConcurrentHashMap.newKeySet();
+    static ArrayList<Integer>[] split(ArrayList<Integer> list) {
+        ArrayList<Integer> first = new ArrayList<>();
 
-        Set<Integer> second = ConcurrentHashMap.newKeySet();
+        ArrayList<Integer> second = new ArrayList<>();
 
-        // get size of the list
         int partitionSize = Math.floorDiv(list.size(), 2);
-
-        // First size)/2 element copy into list
-        // first and rest second list
 
         Iterator<Integer> iterator = list.iterator();
 
-        while ((partitionSize-- > 0) && iterator.hasNext()) {
+        int a;
+
+        a = partitionSize;
+
+        while ((a-- > 0) && iterator.hasNext()) {
             first.add(iterator.next());
             iterator.remove();
         }
 
-        // Second size)/2 element copy into list
-        // first and rest second list
-        while ((partitionSize-- > 0) && iterator.hasNext()) {
+        a = partitionSize;
+
+        while ((a-- > 0) && iterator.hasNext()) {
             second.add(iterator.next());
             iterator.remove();
         }
 
-        // return a List of array
-        return new Set[]{first, second};
+        return new ArrayList[]{first, second};
+    }
+
+    static ArrayList<Integer>[] generateGraph(int nodes, double probability) {
+        ArrayList<Integer>[] graph = (ArrayList<Integer>[]) new ArrayList[nodes];
+
+        for (int i = 0; i < nodes; i++) {
+            graph[i] = new ArrayList<>();
+        }
+
+        IntStream.range(0, nodes - 1).parallel().forEach(i -> {
+            for (int j = 0; j < nodes; j++) {
+                if (Math.random() < probability) {
+                    graph[i].add(j);
+                }
+            }
+        });
+
+        return graph;
     }
 }
