@@ -1,3 +1,6 @@
+import bag.Bag;
+import bag.Pennant;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -5,9 +8,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import bag.*;
 
-public class Parallel_BFS {
+public class BFS_2 {
     static final int SPLIT_CONSTANT = 128;
 
     static final int NUM_NODES = 5000;
@@ -104,10 +106,13 @@ public class Parallel_BFS {
         List<Integer> answer = Collections.synchronizedList(new ArrayList<>());
 
         int start = 0;
-        List<Integer> level = Collections.synchronizedList(new ArrayList<>());
-        level.add(start);
 
-        ArrayList<Integer> nextLevel;
+        Bag level = new Bag();
+        level.addElement(new Pennant(start));
+
+        var ref = new Object() {
+            Bag nextLevel;
+        };
 
         boolean[] visited = new boolean[adj.length];
         Arrays.fill(visited, false);
@@ -115,38 +120,105 @@ public class Parallel_BFS {
         boolean[] added = new boolean[adj.length];
         Arrays.fill(visited, false);
 
-        while (level.size() > 0) {
-            nextLevel = new ArrayList<>();
+        while (!level.isEmpty()) {
+            ref.nextLevel = new Bag();
 
             try {
-                processLevel(adj, level, nextLevel, visited, answer, added);
+                SimpleLinkedList<Pennant> l = new SimpleLinkedList<>();
+                SimpleLinkedList<Pennant> r = new SimpleLinkedList<>();
+
+                processLevel(adj, level, l, r, visited, answer, added);
+
+                l.concatWith(r);
+
+                l.iterator().forEachRemaining(a -> {
+                    answer.add(a.getNodeValue());
+
+                    ref.nextLevel.addElement(a);
+                });
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            level = nextLevel;
+            level = ref.nextLevel;
         }
 
         return new ArrayList<>(answer);
     }
 
-    static void processLevel(ArrayList<Integer>[] adj, List<Integer> level, List<Integer> nextLevel, boolean[] visited, List<Integer> answer, boolean[] added) throws InterruptedException {
-        if (level.size() > SPLIT_CONSTANT) {
-            List<Integer>[] partions = split(level);
+    static void processLevel(ArrayList<Integer>[] adj, Bag level, SimpleLinkedList<Pennant> l, SimpleLinkedList<Pennant> r, boolean[] visited, List<Integer> answer, boolean[] added) throws InterruptedException {
+        if (level.getSize() > SPLIT_CONSTANT) {
+            System.out.println(level.getSize());
+            Bag rightBag = level.splitBag();
+            Bag leftBag = level;
+
+            SimpleLinkedList<Pennant> leftLeftLinked = new SimpleLinkedList<>();
+            SimpleLinkedList<Pennant> leftRightLinked = new SimpleLinkedList<>();
+
+            SimpleLinkedList<Pennant> rightLeftLinked = new SimpleLinkedList<>();
+            SimpleLinkedList<Pennant> rightRightLinked = new SimpleLinkedList<>();
 
             Thread t1 = new Thread(() -> {
                 try {
-                    processLevel(adj, Collections.synchronizedList(partions[1]), nextLevel, visited, answer, added);
+                    processLevel(adj, rightBag, rightLeftLinked, rightRightLinked, visited, answer, added);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             });
             t1.start();
-            processLevel(adj, Collections.synchronizedList(partions[0]), nextLevel, visited, answer, added);
+            processLevel(adj, leftBag, leftLeftLinked, leftRightLinked, visited, answer, added);
 
             t1.join();
+
+            if (leftRightLinked.iterator().hasNext()) {
+                leftLeftLinked.concatWith(leftRightLinked);
+            }
+
+            if (rightRightLinked.iterator().hasNext()) {
+                rightLeftLinked.concatWith(rightRightLinked);
+            }
+
+            l.concatWith(leftLeftLinked);
+            r.concatWith(rightLeftLinked);
         } else {
-            for (int node : level) {
+            var ref = new Object() {
+                boolean flag = false;
+            };
+
+            ArrayList<Bag> bags = new ArrayList<>();
+            bags.add(level);
+
+            SimpleLinkedList<Pennant> linkedList = new SimpleLinkedList<>();
+
+            while (!ref.flag) {
+                ref.flag = true;
+
+                ArrayList<Bag> nextBags = new ArrayList<>();
+
+                bags.forEach(a -> {
+                    if (a.getItems().size() > 1) {
+                        ref.flag = false;
+
+                        Bag rightBag = a.splitBag();
+                        Bag leftBag = a;
+
+                        nextBags.add(leftBag);
+                        nextBags.add(rightBag);
+                    } else {
+                        nextBags.add(a);
+                    }
+                });
+
+                bags = nextBags;
+            }
+
+            bags.forEach(a -> linkedList.add(a.getItems().get(0)));
+
+            Iterator<Pennant> iterator = linkedList.iterator();
+
+            while (iterator.hasNext()) {
+                int node = iterator.next().getNodeValue();
+
                 if (!visited[node]) {
                     answer.add(node);
                     visited[node] = true;
@@ -158,9 +230,7 @@ public class Parallel_BFS {
                     if (!visited[a] && !added[a]) {
                         added[a] = true;
 
-                        synchronized (nextLevel) {
-                            nextLevel.add(a);
-                        }
+                        l.add(new Pennant(a));
                     }
                 }
             }
