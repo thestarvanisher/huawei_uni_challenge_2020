@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashMap;
 
 public class Main {
     static int SPLIT_CONSTANT = 128;
@@ -17,10 +18,10 @@ public class Main {
         long end;
 
         start = System.currentTimeMillis();
-        ArrayList<Integer>[] adj = parseInput(args[0]);
+        HashMap<Integer, ArrayList<Integer>> adj = parseInput(args[0]);
         end = System.currentTimeMillis();
 
-        System.out.println(adj.length);
+        System.out.println(adj.size());
 
         System.out.println(String.format("Parse Time: %d", end - start));
 
@@ -39,22 +40,42 @@ public class Main {
         System.out.println(String.format("Write Time: %d", end - start));
     }
 
-    static ArrayList<Integer>[] parseInput(String filename) throws IOException {
+    static HashMap<Integer, ArrayList<Integer>> parseInput(String filename) throws IOException {
         String[] edges = new String[0];
 
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String line;
         while ((line = br.readLine()) != null) {
-            edges = line.split("[)][,][(]");
+            //edges = line.split("[)][,][(]");
+            edges = line.split(",");
         }
+
         br.close();
 
-        edges[0] = edges[0].replace("[(", "");
-        edges[edges.length - 1] = edges[edges.length - 1].replace(")]", "");
+        edges[0] = edges[0].replace("[", "");
+        edges[edges.length - 1] = edges[edges.length - 1].replace("]", "");
 
-        int[][] edges_2 = new int[edges.length][2];
+        //int[][] edges_2 = new int[edges.length][2];
 
-        int maxElement = 0;
+
+        HashMap<Integer, ArrayList<Integer>> adj = new HashMap<>();
+        int i = 0;
+        while(i < edges.length) {
+            Integer l = Integer.parseInt(edges[i].replace("(", ""));
+            Integer r = Integer.parseInt(edges[i].replace(")", ""));
+            if(adj.get(l) == null) {
+                adj.put(l, new ArrayList<Integer>());
+                adj.get(l).add(r);
+            }
+            else {
+                adj.get(l).add(r);
+            }
+        }
+
+        
+
+
+        /*int maxElement = 0;
 
         for (int i = 0; i < edges.length; i++) {
             String[] nodes = edges[i].split(",");
@@ -74,11 +95,12 @@ public class Main {
         }
 
         Arrays.stream(edges_2).parallel().forEach(a -> adj[a[0]].add(a[1]));
+        */
 
         return adj;
     }
 
-    static ArrayList<Integer> bfs(ArrayList<Integer>[] adj) {
+    static ArrayList<Integer> bfs(HashMap<Integer, ArrayList<Integer>> adj) {
         List<Integer> answer = new ArrayList<>();
         int start = 0;
 
@@ -88,10 +110,10 @@ public class Main {
             Tree nextLevel;
         };
 
-        boolean[] visited = new boolean[adj.length];
+        boolean[] visited = new boolean[adj.size()];
         Arrays.fill(visited, false);
 
-        boolean[] added = new boolean[adj.length];
+        boolean[] added = new boolean[adj.size()];
         Arrays.fill(added, false);
 
         answer.add(start);
@@ -126,7 +148,7 @@ public class Main {
         return new ArrayList<>(answer);
     }
 
-    static void processLevel(ArrayList<Integer>[] adj, Tree level, SimpleLinkedList<Tree> l, SimpleLinkedList<Tree> r, boolean[] visited, List<Integer> answer, boolean[] added) throws InterruptedException {
+    static void processLevel(HashMap<Integer, ArrayList<Integer>> adj, Tree level, SimpleLinkedList<Tree> l, SimpleLinkedList<Tree> r, boolean[] visited, List<Integer> answer, boolean[] added) throws InterruptedException {
         if (level.size() > SPLIT_CONSTANT) {
             Tree[] lr = level.split();
             Tree rightTree = lr[1];
@@ -178,8 +200,8 @@ public class Main {
                     visited[node] = true;
                 }
 
-                for (int j = 0; j < adj[node].size(); j++) {
-                    int a = adj[node].get(j);
+                for (int j = 0; j < adj.get(node).size(); j++) {
+                    int a = adj.get(node).get(j);
 
                     if (!visited[a]) {
                         l.add(new Tree(a));
