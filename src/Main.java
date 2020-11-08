@@ -62,7 +62,7 @@ public class Main {
         int i = 0;
         while(i < edges.length) {
             Integer l = Integer.parseInt(edges[i].replace("(", ""));
-            Integer r = Integer.parseInt(edges[i].replace(")", ""));
+            Integer r = Integer.parseInt(edges[i + 1].replace(")", ""));
             if(adj.get(l) == null) {
                 adj.put(l, new ArrayList<Integer>());
                 adj.get(l).add(r);
@@ -70,6 +70,7 @@ public class Main {
             else {
                 adj.get(l).add(r);
             }
+            i += 2;
         }
 
         
