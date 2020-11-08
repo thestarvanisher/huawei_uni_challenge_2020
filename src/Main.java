@@ -52,26 +52,28 @@ public class Main {
         edges[0] = edges[0].replace("[(", "");
         edges[edges.length - 1] = edges[edges.length - 1].replace(")]", "");
 
-        int maxNode = Arrays.stream(edges).mapToInt(a -> {
-            String[] nodes = a.split(",");
+        int[][] edges_2 = new int[edges.length][2];
 
-            return Math.max(Integer.parseInt(nodes[0]), Integer.parseInt(nodes[1]));
-        }).max().orElse(0);
+        int maxElement = 0;
 
-        ArrayList<Integer>[] adj = (ArrayList<Integer>[]) new ArrayList[maxNode + 1];
+        for (int i = 0; i < edges.length; i++) {
+            String[] nodes = edges[i].split(",");
+
+            int a = Integer.parseInt(nodes[0]);
+            int b = Integer.parseInt(nodes[1]);
+
+            maxElement = Math.max(maxElement, a);
+
+            edges_2[i] = new int[]{a, b};
+        }
+
+        ArrayList<Integer>[] adj = (ArrayList<Integer>[]) new ArrayList[maxElement + 1];
 
         for (int i = 0; i < adj.length; i++) {
             adj[i] = new ArrayList<>();
         }
 
-        Arrays.stream(edges).forEach(a -> {
-            String[] nodes = a.split(",");
-
-            int node1 = Integer.parseInt(nodes[0]);
-            int node2 = Integer.parseInt(nodes[1]);
-
-            adj[node1].add(node2);
-        });
+        Arrays.stream(edges_2).parallel().forEach(a -> adj[a[0]].add(a[1]));
 
         return adj;
     }
