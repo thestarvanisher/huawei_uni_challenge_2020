@@ -4,8 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 
 public class Main {
     static int SPLIT_CONSTANT = 128;
@@ -46,7 +46,6 @@ public class Main {
         BufferedReader br = new BufferedReader(new FileReader(filename));
         String line;
         while ((line = br.readLine()) != null) {
-            //edges = line.split("[)][,][(]");
             edges = line.split(",");
         }
 
@@ -55,48 +54,15 @@ public class Main {
         edges[0] = edges[0].replace("[", "");
         edges[edges.length - 1] = edges[edges.length - 1].replace("]", "");
 
-        //int[][] edges_2 = new int[edges.length][2];
-
-
         HashMap<Integer, ArrayList<Integer>> adj = new HashMap<>();
         int i = 0;
-        while(i < edges.length) {
+        while (i < edges.length) {
             Integer l = Integer.parseInt(edges[i].replace("(", ""));
             Integer r = Integer.parseInt(edges[i + 1].replace(")", ""));
-            if(adj.get(l) == null) {
-                adj.put(l, new ArrayList<Integer>());
-                adj.get(l).add(r);
-            }
-            else {
-                adj.get(l).add(r);
-            }
+            adj.computeIfAbsent(l, k -> new ArrayList<>());
+            adj.get(l).add(r);
             i += 2;
         }
-
-        
-
-
-        /*int maxElement = 0;
-
-        for (int i = 0; i < edges.length; i++) {
-            String[] nodes = edges[i].split(",");
-
-            int a = Integer.parseInt(nodes[0]);
-            int b = Integer.parseInt(nodes[1]);
-
-            maxElement = Math.max(maxElement, a);
-
-            edges_2[i] = new int[]{a, b};
-        }
-
-        ArrayList<Integer>[] adj = (ArrayList<Integer>[]) new ArrayList[maxElement + 1];
-
-        for (int i = 0; i < adj.length; i++) {
-            adj[i] = new ArrayList<>();
-        }
-
-        Arrays.stream(edges_2).parallel().forEach(a -> adj[a[0]].add(a[1]));
-        */
 
         return adj;
     }
