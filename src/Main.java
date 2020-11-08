@@ -1,11 +1,10 @@
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class Main {
     static int SPLIT_CONSTANT = 128;
@@ -40,15 +39,15 @@ public class Main {
         System.out.println(String.format("Write Time: %d", end - start));
     }
 
-    static ArrayList<Integer>[] parseInput(String filename) throws FileNotFoundException {
-        Scanner scanner = new Scanner(new File(filename));
-
+    static ArrayList<Integer>[] parseInput(String filename) throws IOException {
         String[] edges = new String[0];
-        while (scanner.hasNextLine()) {
-            edges = scanner.nextLine().split("[)][,][(]");
-        }
 
-        scanner.close();
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        String line;
+        while ((line = br.readLine()) != null) {
+            edges = line.split("[)][,][(]");
+        }
+        br.close();
 
         edges[0] = edges[0].replace("[(", "");
         edges[edges.length - 1] = edges[edges.length - 1].replace(")]", "");
