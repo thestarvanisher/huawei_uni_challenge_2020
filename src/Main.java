@@ -80,7 +80,7 @@ public class Main {
             adj[i] = new ArrayList<>();
         }
 
-        Arrays.stream(edges_2).parallel().forEach(a -> adj[a[0]].add(a[1]));
+        Arrays.stream(edges_2).forEach(a -> adj[a[0]].add(a[1]));
         end = System.currentTimeMillis();
         System.out.println(String.format("Adj List Formation Time: %d", end - start));
 
