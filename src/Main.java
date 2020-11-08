@@ -40,15 +40,22 @@ public class Main {
     }
 
     static ArrayList<Integer>[] parseInput(String filename) throws IOException {
-        String[] edges = new String[0];
+        long start;
+        long end;
 
+        start = System.currentTimeMillis();
         BufferedReader br = new BufferedReader(new FileReader(filename));
-        String line;
-        while ((line = br.readLine()) != null) {
-            edges = line.split("[)][,][(]");
-        }
+        String line = br.readLine();
         br.close();
+        end = System.currentTimeMillis();
+        System.out.println(String.format("Read Time: %d", end - start));
 
+        start = System.currentTimeMillis();
+        String[] edges = line.split("[)][,][(]");
+        end = System.currentTimeMillis();
+        System.out.println(String.format("Split Time: %d", end - start));
+
+        start = System.currentTimeMillis();
         edges[0] = edges[0].replace("[(", "");
         edges[edges.length - 1] = edges[edges.length - 1].replace(")]", "");
 
@@ -74,6 +81,8 @@ public class Main {
         }
 
         Arrays.stream(edges_2).parallel().forEach(a -> adj[a[0]].add(a[1]));
+        end = System.currentTimeMillis();
+        System.out.println(String.format("Adj List Formation Time: %d", end - start));
 
         return adj;
     }
@@ -114,7 +123,6 @@ public class Main {
                         temp.add(a);
                         added[a.getNodeValue()] = true;
                     }
-
                 });
                 ref.nextLevel = Tree.combineTrees(temp);
             } catch (InterruptedException e) {
