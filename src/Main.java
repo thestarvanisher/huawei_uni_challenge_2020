@@ -41,30 +41,57 @@ public class Main {
     }
 
     static HashMap<Integer, ArrayList<Integer>> parseInput(String filename) throws IOException {
-        String[] edges = new String[0];
+        HashMap<Integer, ArrayList<Integer>> adj = new HashMap<>();
 
         BufferedReader br = new BufferedReader(new FileReader(filename));
-        String line;
-        while ((line = br.readLine()) != null) {
-            edges = line.split(",");
+        int c;
+        while (true) {
+            c = br.read();
+
+            if (c == -1) {
+                break;
+            }
+
+            char character = (char) c;
+
+            if (character == '(') {
+                readPair(adj, br);
+            }
         }
 
         br.close();
 
-        edges[0] = edges[0].replace("[", "");
-        edges[edges.length - 1] = edges[edges.length - 1].replace("]", "");
+        return adj;
+    }
 
-        HashMap<Integer, ArrayList<Integer>> adj = new HashMap<>();
-        int i = 0;
-        while (i < edges.length) {
-            Integer l = Integer.parseInt(edges[i].replace("(", ""));
-            Integer r = Integer.parseInt(edges[i + 1].replace(")", ""));
-            adj.computeIfAbsent(l, k -> new ArrayList<>());
-            adj.get(l).add(r);
-            i += 2;
+    static void readPair(HashMap<Integer, ArrayList<Integer>> hashMap, BufferedReader br) throws IOException {
+        StringBuilder num;
+        char character;
+
+        int[] pair = new int[2];
+
+        num = new StringBuilder();
+        character = '0';
+        while (character != ',') {
+            character = (char) br.read();
+
+            num.append(character);
         }
 
-        return adj;
+        pair[0] = Integer.parseInt(num.toString().substring(0, num.length() - 1));
+
+        num = new StringBuilder();
+        character = '0';
+        while (character != ')') {
+            character = (char) br.read();
+
+            num.append(character);
+        }
+
+        pair[1] = Integer.parseInt(num.toString().substring(0, num.length() - 1));
+
+        hashMap.computeIfAbsent(pair[0], k -> new ArrayList<>());
+        hashMap.get(pair[0]).add(pair[1]);
     }
 
     static ArrayList<Integer> bfs(HashMap<Integer, ArrayList<Integer>> adj) {
