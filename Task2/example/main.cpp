@@ -45,7 +45,7 @@ public:
     }
 
     int getNode() {
-//        std::lock_guard <std::mutex> lock(mMutex);
+        std::lock_guard <std::mutex> lock(mMutex);
         int x = counter--;
         return x;
     }

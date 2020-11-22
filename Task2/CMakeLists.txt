@@ -17,6 +17,6 @@ macro(add_executable _name)
     endif ()
 endmacro()
 
-add_executable(huawei_uni_challenge_2020 main.cpp)
+add_executable(huawei_uni_challenge_2020 src/main.cpp)
 
 install(TARGETS DESTINATION ../..)
