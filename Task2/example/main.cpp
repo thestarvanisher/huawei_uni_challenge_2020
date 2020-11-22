@@ -45,7 +45,7 @@ public:
     }
 
     int getNode() {
-        std::lock_guard<std::mutex> lock(mMutex);
+//        std::lock_guard <std::mutex> lock(mMutex);
         int x = counter--;
         return x;
     }
@@ -55,19 +55,19 @@ public:
 class NodeThread {
 
     vector<int> *P; // Predecessors
-    int *sigma; // Numbers of shortest paths
-    int *d; // Distance
+    int *sigma;     // Numbers of shortest paths
+    int *d;         // Distance
     double *delta;
 
     stack<int> S;
     queue<int> Q;
 
     NodePool *mPool;
-    vector<Node> *mGraph;
+    vector <Node> *mGraph;
     size_t mLen;
 
 public:
-    NodeThread(NodePool *pool, vector<Node> *graph, int id) {
+    NodeThread(NodePool *pool, vector <Node> *graph, int id) {
         mLen = graph->size();
         d = new int[mLen];
         delta = new double[mLen];
@@ -118,7 +118,7 @@ public:
                 }
                 if (w != number) {
                     // Update BC value as atomic operation (for float we need own lock)
-                    std::lock_guard<std::mutex> lock(t[w]);
+//                    std::lock_guard <std::mutex> lock(t[w]);
                     mGraph->at(w).BC += delta[w];
                 }
             }
@@ -143,8 +143,8 @@ struct cmpNode {
 } cmp;
 
 
-void create_graph_from_input(char *file_name, vector<Node> &graph,
-                             map<int, int> &projection, vector<vector<int>> &neighbours) {
+void create_graph_from_input(char *file_name, vector <Node> &graph,
+                             map<int, int> &projection, vector <vector<int>> &neighbours) {
     std::ifstream ifs;
     ifs.open(file_name, std::ifstream::in);
     int x;
@@ -173,7 +173,7 @@ void create_graph_from_input(char *file_name, vector<Node> &graph,
     ifs.close();
 }
 
-void create_mutexes(vector<Node> &graph, vector<vector<int>> &neighbours) {
+void create_mutexes(vector <Node> &graph, vector <vector<int>> &neighbours) {
     // Mutexes for BC updates
     size_t graph_size = graph.size();
     t = new std::mutex[graph_size];
@@ -182,8 +182,8 @@ void create_mutexes(vector<Node> &graph, vector<vector<int>> &neighbours) {
             graph.at(i).mNeighbors.push_back(&graph.at(neighbours.at(i).at(j)));
 }
 
-void create_threads(int number_of_threads, vector<Node> &graph, NodePool &boss, vector<thread> &vec,
-                    vector<NodeThread> &threads) {
+void create_threads(int number_of_threads, vector <Node> &graph, NodePool &boss, vector <thread> &vec,
+                    vector <NodeThread> &threads) {
     for (int i = 0; i < number_of_threads; ++i) {
         threads.emplace_back(&boss, &graph, i);
         vec.emplace_back(threads.at(i));
@@ -193,7 +193,7 @@ void create_threads(int number_of_threads, vector<Node> &graph, NodePool &boss, 
         vec.at(i).join();
 }
 
-void write_output(char *file_name, vector<Node> &graph) {
+void write_output(char *file_name, vector <Node> &graph) {
     std::ofstream ofs;
     ofs.open(file_name, std::ifstream::trunc);
 
@@ -208,9 +208,9 @@ int main(int argc, char *argv[]) {
     if (argc != PARAM_NUMBER)
         exit(-1);
 
-    vector<Node> graph;
+    vector <Node> graph;
     map<int, int> projection;
-    vector<vector<int>> neighbours;
+    vector <vector<int>> neighbours;
 
     create_graph_from_input(argv[PARAM_IN], graph, projection, neighbours);
 
@@ -218,8 +218,8 @@ int main(int argc, char *argv[]) {
 
     NodePool boss(graph.size());
 
-    vector<thread> vec;
-    vector<NodeThread> threads;
+    vector <thread> vec;
+    vector <NodeThread> threads;
 
     create_threads(atoi(argv[PARAM_THREADS]), graph, boss, vec, threads);
 
