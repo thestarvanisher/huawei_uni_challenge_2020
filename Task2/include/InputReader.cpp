@@ -45,6 +45,8 @@ void InputReader::readFile(unordered_map<int, vector<int>> *adj, unordered_map<i
     bool left_n = false, right_n = false;
     int l = 0, r = 0;
 
+    int maxNode = 0;
+
     for (int i = 0; i < size; i++) {
         char c = mapped[i];
         if (c == '(') {
@@ -56,18 +58,21 @@ void InputReader::readFile(unordered_map<int, vector<int>> *adj, unordered_map<i
             if (adj->find(l) == adj->end()) {
                 adj->insert(make_pair(l, vector<int>()));
             }
+
             if (adj->find(r) == adj->end()) {
                 adj->insert(make_pair(r, vector<int>()));
             }
 
             adj->at(l).push_back(r);
 
+            maxNode = max(max(l, maxNode), r);
+
             l = 0;
             r = 0;
         } else if (c == ',') {
             if (!left_n) continue;
             right_n = true;
-        } else if (c > '0' && c < '9') {
+        } else if (c >= '0' && c <= '9') {
             if (!right_n) {
                 l = l * 10 + (c - '0');
             } else {
@@ -77,6 +82,13 @@ void InputReader::readFile(unordered_map<int, vector<int>> *adj, unordered_map<i
         }
     }
 
+    for (int i = 0; i < maxNode; i++) {
+        if (adj->find(i) == adj->end()) {
+            adj->insert(make_pair(i, vector<int>()));
+        }
+    }
+
+    cout << "Graph Size: " << adj->size() << endl;
 
     for (auto i: *adj) {
         visited->insert(make_pair(i.first, make_pair(false, false)));

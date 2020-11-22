@@ -9,6 +9,7 @@
 #include <string>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <algorithm>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

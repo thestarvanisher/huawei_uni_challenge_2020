@@ -2,6 +2,11 @@
 // Created by Joe on 22/11/2020.
 //
 
+#include <queue>
+#include <stack>
+#include <algorithm>
+#include <math.h>
+#include <string.h>
 #include "../include/Bag.h"
 #include "../include/InputReader.h"
 
@@ -23,6 +28,88 @@ void printGraph(const unordered_map<int, vector<int>> &adj) {
     }
 }
 
+double *doGraphShit(unordered_map<int, vector<int>> *adj, unordered_map<int, pair<bool, bool>> *visited) {
+    vector<int> *P;
+    int *sigma;
+    int *d;
+    double *delta;
+    double *ans;
+
+    stack<int> S;
+    queue<int> Q;
+
+    int maxNode = adj->size();
+
+    d = new int[maxNode];
+    delta = new double[maxNode];
+    sigma = new int[maxNode];
+    P = new vector<int>[maxNode];
+    ans = new double[maxNode];
+
+    cout << "Starting" << endl;
+
+    for (int i = maxNode - 1; i > -1; i--) {
+        int currentNode = i;
+
+        memset(sigma, 0, sizeof(int) * maxNode);
+        memset(d, -1, sizeof(int) * maxNode);
+        memset(delta, 0, sizeof(double) * maxNode);
+        for (int j = 0; j < maxNode; j++) {
+            P[j].clear();
+        }
+
+        sigma[currentNode] = 1;
+        d[currentNode] = 1;
+        Q.push(currentNode);
+
+        while (!Q.empty()) {
+            int v = Q.front();
+            Q.pop();
+
+            S.emplace(v);
+
+            for (const int &w: adj->at(v)) {
+                if (d[w] < 0) {
+                    Q.push(w);
+                    d[w] = d[v] + 1;
+                }
+
+                if (d[w] == d[v] + 1) {
+                    sigma[w] += sigma[v];
+                    P[w].push_back(v);
+                }
+            }
+        }
+
+        while (!S.empty()) {
+            int w = S.top();
+            S.pop();
+
+            for (const int &v: P[w]) {
+                double toAdd = (double) ((double) sigma[v] / (double) sigma[w]) * (double) (1 + delta[w]);
+
+                delta[v] += toAdd;
+            }
+
+            if (w != currentNode) {
+                ans[w] += delta[w];
+            }
+        }
+    }
+
+    double maxNum = 0;
+
+    for (int i = 0; i < maxNode; i++) {
+        maxNum = max(ans[i], maxNum);
+    }
+
+    for (int i = 0; i < maxNode; i++) {
+        ans[i] /= maxNum;
+    }
+
+    return ans;
+}
+
 int main(int argc, char *argv[]) {
     if (argc != PARAM_NUMBER) {
         exit(-1);
@@ -39,9 +126,19 @@ int main(int argc, char *argv[]) {
 
     inputReader.readFile(&adj, &visited);
 
-//    output_file(output_file_na    me);
-
     printGraph(adj);
+
+    double *ans = doGraphShit(&adj, &visited);
+
+    for (int i = 0; i < adj.size(); i++) {
+        double a = ans[i];
+
+        if (!adj.at(i).empty()) {
+            cout << i << " " << floor(ans[i] * 100) / 100 << endl;
+        }
+    }
+
+//    output_file(outputFileName);
 
     return 0;
 }

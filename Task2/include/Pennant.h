@@ -11,7 +11,7 @@ private:
 
 public:
     Pennant(int n);
-s
+
     Pennant *getLeft();
 
     Pennant *getRight();

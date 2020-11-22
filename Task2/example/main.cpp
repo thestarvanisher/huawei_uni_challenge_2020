@@ -83,6 +83,9 @@ public:
         // Operator overloading allows to execute class object as thread
         int number;
         while ((number = mPool->getNode()) >= 0) {// NodePool gives as work to do
+
+            cout << "CurrentNode: " << number << endl;
+
             clear_computations();
             sigma[number] = 1;
             d[number] = 1;
@@ -95,8 +98,11 @@ public:
 
                 S.emplace(v);
 
+                cout << "V: " << v << endl;
+
                 for (int i = 0; i < mGraph->at(v).mNeighbors.size(); ++i) {
                     int w = mGraph->at(v).mNeighbors.at(i)->mProjected;
+
                     if (d[w] < 0) {
                         Q.push(w);
                         d[w] = d[v] + 1;
