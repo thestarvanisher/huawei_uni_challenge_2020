@@ -24,7 +24,7 @@ using namespace std;
 
 class InputReader {
 private:
-    const char *fileName;
+    char *fileName;
 
 public:
     InputReader(char *fileName);

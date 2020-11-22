@@ -4,6 +4,10 @@
 
 #include "InputReader.h"
 
+InputReader::InputReader(char *fileName) {
+    this->fileName = fileName;
+}
+
 void InputReader::readFile(unordered_map<int, vector<int>> *adj, unordered_map<int, pair<bool, bool>> *visited) {
     int fileDescriptor;
 
@@ -29,7 +33,7 @@ void InputReader::readFile(unordered_map<int, vector<int>> *adj, unordered_map<i
 
     size = s.st_size;
 
-    mapped = (char *) mmap(0, size, PROT_READ, MAP_PRIVATE, fileDesriptor, 0);
+    mapped = (char *) mmap(0, size, PROT_READ, MAP_PRIVATE, fileDescriptor, 0);
 
     close(fileDescriptor);
 
@@ -77,8 +81,4 @@ void InputReader::readFile(unordered_map<int, vector<int>> *adj, unordered_map<i
     for (auto i: *adj) {
         visited->insert(make_pair(i.first, make_pair(false, false)));
     }
-}
-
-InputReader::InputReader(char *fileName) {
-    this->fileName = fileName;
 }

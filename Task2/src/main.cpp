@@ -13,7 +13,7 @@
 
 using namespace std;
 
-void printGraph(unordered_map<int, vector<int>> adj) {
+void printGraph(const unordered_map<int, vector<int>> &adj) {
     for (const auto &i: adj) {
         cout << i.first << " -> ";
         for (int j : i.second) {

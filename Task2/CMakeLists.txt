@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(Threads REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-O3 -Wall")
+include_directories(include)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/include")
 
 # http://stackoverflow.com/questions/10555706/
 macro(add_executable _name)
