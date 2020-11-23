@@ -1,5 +1,5 @@
 //
-// Created by Joe on 23/11/2020.
+// Created by Ivo and Joe on 23/11/2020.
 //
 
 #include "OutputWriter.h"
@@ -8,7 +8,7 @@ OutputWriter::OutputWriter(char *fileName) {
     this->fileName = fileName;
 }
 
-void OutputWriter::writeFile(double *ans, unordered_map<int, vector<int>> *adj) {
+void OutputWriter::writeFile(double *ans, unordered_map<int, LinkedList> *adj) {
     ofstream answerFile;
 
     answerFile.open(fileName, ios::trunc);
@@ -16,7 +16,19 @@ void OutputWriter::writeFile(double *ans, unordered_map<int, vector<int>> *adj) 
 
     bool first = false;
 
-    for (int i = 0; i < adj->size(); i++) {
+
+    for(auto i: *adj) {
+        if((*adj)[i.first].isEmpty() == false) {
+            if(first) {
+                answerFile << ",";
+            }
+            first = true;
+
+            answerFile << "(" << i.first << "," << ans[i.first] << ")";
+        }
+    }
+
+    /*for (int i = 0; i < adj->size(); i++) {
         if (!adj->at(i).empty()) {
             if (first) {
                 answerFile << ",";
@@ -25,7 +37,8 @@ void OutputWriter::writeFile(double *ans, unordered_map<int, vector<int>> *adj) 
 
             answerFile << "(" << i << "," << ans[i] << ")";
         }
-    }
+    }*/
+
 
     answerFile << "]";
     answerFile.close();

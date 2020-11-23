@@ -8,7 +8,7 @@ InputReader::InputReader(char *fileName) {
     this->fileName = fileName;
 }
 
-void InputReader::readFile(unordered_map<int, vector<int>> *adj) {
+void InputReader::readFile(unordered_map<int, LinkedList> *adj, unordered_map<int, pair<bool, bool>> *visited) {
     int fileDescriptor;
 
     struct stat s;
@@ -55,17 +55,20 @@ void InputReader::readFile(unordered_map<int, vector<int>> *adj) {
             left_n = false;
             right_n = false;
 
-            if (adj->find(l) == adj->end()) {
+            /*if (adj->find(l) == adj->end()) {
                 adj->insert(make_pair(l, vector<int>()));
             }
 
             if (adj->find(r) == adj->end()) {
                 adj->insert(make_pair(r, vector<int>()));
             }
+            */
 
-            adj->at(l).push_back(r);
+            //adj->at(l).push_back(r);
+            Node *p = new Node(r);
+            (*adj)[l].addElement(p);
 
-            maxNode = max(max(l, maxNode), r);
+            //maxNode = max(max(l, maxNode), r);
 
             l = 0;
             r = 0;
@@ -78,14 +81,18 @@ void InputReader::readFile(unordered_map<int, vector<int>> *adj) {
             } else {
                 r = r * 10 + (c - '0');
             }
-
         }
     }
 
-    for (int i = 0; i < maxNode; i++) {
+    /*for (int i = 0; i < maxNode; i++) {
         if (adj->find(i) == adj->end()) {
             adj->insert(make_pair(i, vector<int>()));
         }
+    }*/
+
+    for(auto i: *adj) {
+        //visited->insert(make_pair(i.first, make_pair(false, false)));
+        (*visited)[i.first] = make_pair(false, false);
     }
 
     cout << "Graph Size: " << adj->size() << endl;

@@ -1,5 +1,5 @@
 //
-// Created by Joe on 23/11/2020.
+// Created by Ivo and Joe on 23/11/2020.
 //
 
 #include <unordered_map>
@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 #include <iomanip>
+#include "LinkedList.h"
 
 using namespace std;
 
@@ -18,5 +19,5 @@ private:
 public:
     explicit OutputWriter(char *fileName);
 
-    void writeFile(double *ans, unordered_map<int, vector<int>> *adj);
+    void writeFile(double *ans, unordered_map<int, LinkedList> *adj);
 };

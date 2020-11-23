@@ -1,5 +1,5 @@
 //
-// Created by Joe on 22/11/2020.
+// Created by Ivo and Joe on 22/11/2020.
 //
 
 #include <queue>
@@ -19,17 +19,26 @@
 
 using namespace std;
 
-void printGraph(const unordered_map<int, vector<int>> &adj) {
-    for (const auto &i: adj) {
+void printGraph(unordered_map<int, LinkedList> *adj) {
+    /*for (const auto &i: adj) {
         cout << i.first << " -> ";
         for (int j : i.second) {
             cout << j << " ";
         }
         cout << endl;
+    }*/
+    for(auto i: *adj) {
+        cout << i.first << " -> ";
+        Node *itr = (*adj)[i.first].beginIter();
+        while(itr != NULL) {
+            cout << (*itr).value << " ";
+        }
+        cout << endl;
+        itr = itr->next;
     }
 }
 
-double *doGraphShit(unordered_map<int, vector<int>> *adj) {
+double *doGraphShit(unordered_map<int, LinkedList> *adj) {
     vector<int> *P;
     int *sigma;
     int *d;
@@ -69,7 +78,21 @@ double *doGraphShit(unordered_map<int, vector<int>> *adj) {
 
             S.emplace(v);
 
-            for (const int &w: adj->at(v)) {
+            Node *itr = (*adj)[v].beginIter();
+            while(itr != NULL) {
+                if(d[(*itr).value] < 0) {
+                    Q.push((*itr).value);
+                    d[(*itr).value] = d[(*itr).value] + 1;
+                }
+
+                if(d[(*itr).value] == d[v] + 1) {
+                    sigma[(*itr).value] += sigma[v];
+                    P[(*itr).value].push_back(v);
+                }
+                itr = itr->next;
+            }
+
+            /*for (const int &w: adj->at(v)) {
                 if (d[w] < 0) {
                     Q.push(w);
                     d[w] = d[v] + 1;
@@ -79,7 +102,7 @@ double *doGraphShit(unordered_map<int, vector<int>> *adj) {
                     sigma[w] += sigma[v];
                     P[w].push_back(v);
                 }
-            }
+            }*/
         }
 
         while (!S.empty()) {
@@ -111,15 +134,22 @@ double *doGraphShit(unordered_map<int, vector<int>> *adj) {
     return ans;
 }
 
-void printAnswer(const double *ans, unordered_map<int, vector<int>> &adj) {
-    for (int i = 0; i < adj.size(); i++) {
+void printAnswer(const double *ans, unordered_map<int, LinkedList> *adj) {
+    /*for (int i = 0; i < adj.size(); i++) {
         if (!adj.at(i).empty()) {
             cout << i << " " << floor(ans[i] * 100) / 100 << endl;
+        }
+    }*/
+    for(auto i: *adj) {
+        if((*adj)[i.first].isEmpty() == false) {
+            cout << i.first << " " << floor(ans[i.first] * 100) / 100 << endl;
         }
     }
 }
 
 int main(int argc, char *argv[]) {
+    ios_base::sync_with_stdio(false);
+
     if (argc != PARAM_NUMBER) {
         exit(-1);
     }
@@ -128,16 +158,16 @@ int main(int argc, char *argv[]) {
     char *outputFileName = argv[PARAM_OUT];
     int numThreads = atoi(argv[PARAM_THREADS]); // NOLINT(cert-err34-c)
 
-    unordered_map<int, vector<int>> adj;
-
+    unordered_map<int, LinkedList> adj;
+    unordered_map<int, pair<bool, bool>> visited;
     auto inputReader = InputReader(inputFileName);
-    inputReader.readFile(&adj);
+    inputReader.readFile(&adj, &visited);
 
-//    printGraph(adj);
+//    printGraph(&adj);
 
     double *ans = doGraphShit(&adj);
 
-//    printAnswer(ans, adj);
+//    printAnswer(ans, &adj);
 
     auto outputWriter = OutputWriter(outputFileName);
     outputWriter.writeFile(ans, &adj);

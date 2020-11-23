@@ -1,5 +1,5 @@
 //
-// Created by Joe on 22/11/2020.
+// Created by Ivo and Joe on 22/11/2020.
 //
 
 #include <iostream>
@@ -20,6 +20,7 @@
 #include <utility>
 #include <thread>
 #include <exception>
+#include "LinkedList.h"
 
 using namespace std;
 
@@ -30,5 +31,5 @@ private:
 public:
     explicit InputReader(char *fileName);
 
-    void readFile(unordered_map<int, vector<int>> *adj);
+    void readFile(unordered_map<int, LinkedList> *adj, unordered_map<int, pair<bool, bool>> *visited);
 };
