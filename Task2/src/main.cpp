@@ -5,8 +5,9 @@
 #include <queue>
 #include <stack>
 #include <algorithm>
-#include <math.h>
-#include <string.h>
+#include <cmath>
+#include <cstring>
+#include "../include/OutputWriter.h"
 #include "../include/Bag.h"
 #include "../include/InputReader.h"
 
@@ -28,7 +29,7 @@ void printGraph(const unordered_map<int, vector<int>> &adj) {
     }
 }
 
-double *doGraphShit(unordered_map<int, vector<int>> *adj, unordered_map<int, pair<bool, bool>> *visited) {
+double *doGraphShit(unordered_map<int, vector<int>> *adj) {
     vector<int> *P;
     int *sigma;
     int *d;
@@ -110,6 +111,14 @@ double *doGraphShit(unordered_map<int, vector<int>> *adj, unordered_map<int, pai
     return ans;
 }
 
+void printAnswer(const double *ans, unordered_map<int, vector<int>> &adj) {
+    for (int i = 0; i < adj.size(); i++) {
+        if (!adj.at(i).empty()) {
+            cout << i << " " << floor(ans[i] * 100) / 100 << endl;
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     if (argc != PARAM_NUMBER) {
         exit(-1);
@@ -120,25 +129,18 @@ int main(int argc, char *argv[]) {
     int numThreads = atoi(argv[PARAM_THREADS]); // NOLINT(cert-err34-c)
 
     unordered_map<int, vector<int>> adj;
-    unordered_map<int, pair<bool, bool>> visited;
 
     auto inputReader = InputReader(inputFileName);
+    inputReader.readFile(&adj);
 
-    inputReader.readFile(&adj, &visited);
+//    printGraph(adj);
 
-    printGraph(adj);
+    double *ans = doGraphShit(&adj);
 
-    double *ans = doGraphShit(&adj, &visited);
+//    printAnswer(ans, adj);
 
-    for (int i = 0; i < adj.size(); i++) {
-        double a = ans[i];
-
-        if (!adj.at(i).empty()) {
-            cout << i << " " << floor(ans[i] * 100) / 100 << endl;
-        }
-    }
-
-//    output_file(outputFileName);
+    auto outputWriter = OutputWriter(outputFileName);
+    outputWriter.writeFile(ans, &adj);
 
     return 0;
 }

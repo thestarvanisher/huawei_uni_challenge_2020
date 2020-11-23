@@ -8,7 +8,7 @@ InputReader::InputReader(char *fileName) {
     this->fileName = fileName;
 }
 
-void InputReader::readFile(unordered_map<int, vector<int>> *adj, unordered_map<int, pair<bool, bool>> *visited) {
+void InputReader::readFile(unordered_map<int, vector<int>> *adj) {
     int fileDescriptor;
 
     struct stat s;
@@ -89,8 +89,4 @@ void InputReader::readFile(unordered_map<int, vector<int>> *adj, unordered_map<i
     }
 
     cout << "Graph Size: " << adj->size() << endl;
-
-    for (auto i: *adj) {
-        visited->insert(make_pair(i.first, make_pair(false, false)));
-    }
 }
