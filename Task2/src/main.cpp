@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <limits>
 #include "../include/OutputWriter.h"
 #include "../include/Bag.h"
 #include "../include/InputReader.h"
@@ -16,8 +17,10 @@
 #define PARAM_THREADS 3
 
 #define PARAM_NUMBER 4
-
+int MAXIMUM = 0;
+int MAX_NODE;
 using namespace std;
+
 
 void printGraph(unordered_map<int, LinkedList> *adj) {
     /*for (const auto &i: adj) {
@@ -47,8 +50,8 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
 
     stack<int> S;
     queue<int> Q;
-
-    int maxNode = adj->size();
+    int maxNode = MAX_NODE;
+    maxNode += 1;
 
     d = new int[maxNode];
     delta = new double[maxNode];
@@ -56,11 +59,11 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
     P = new vector<int>[maxNode];
     ans = new double[maxNode];
 
-    cout << "Starting" << endl;
+    //cout << "Starting" << endl;
 
-    for (int i = maxNode - 1; i > -1; i--) {
-        int currentNode = i;
-
+    //for (int i = maxNode - 1; i > -1; i--) {
+    for(auto i: *adj) {
+        int currentNode = i.first;
         memset(sigma, 0, sizeof(int) * maxNode);
         memset(d, -1, sizeof(int) * maxNode);
         memset(delta, 0, sizeof(double) * maxNode);
@@ -69,20 +72,20 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
         }
 
         sigma[currentNode] = 1;
-        d[currentNode] = 1;
+        d[currentNode] = 0;
         Q.push(currentNode);
 
         while (!Q.empty()) {
             int v = Q.front();
             Q.pop();
 
-            S.emplace(v);
+            S.push(v);
 
             Node *itr = (*adj)[v].beginIter();
             while(itr != NULL) {
                 if(d[(*itr).value] < 0) {
                     Q.push((*itr).value);
-                    d[(*itr).value] = d[(*itr).value] + 1;
+                    d[(*itr).value] = d[v] + 1;
                 }
 
                 if(d[(*itr).value] == d[v] + 1) {
@@ -109,10 +112,9 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
             int w = S.top();
             S.pop();
 
-            for (const int &v: P[w]) {
-                double toAdd = (double) ((double) sigma[v] / (double) sigma[w]) * (double) (1 + delta[w]);
-
-                delta[v] += toAdd;
+            for (const int &vv: P[w]) {
+                double toAdd = (double) ((double) sigma[vv] / (double) sigma[w]) * (double) (1 + delta[w]);
+                delta[vv] += toAdd;
             }
 
             if (w != currentNode) {
@@ -120,15 +122,17 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
             }
         }
     }
-
+    
     double maxNum = 0;
+    double minNum = numeric_limits<double>::max();
 
     for (int i = 0; i < maxNode; i++) {
         maxNum = max(ans[i], maxNum);
+        minNum = min(ans[i], minNum);
     }
 
     for (int i = 0; i < maxNode; i++) {
-        ans[i] /= maxNum;
+        ans[i] = ((ans[i] - minNum) / (maxNum - minNum));
     }
 
     return ans;
@@ -161,7 +165,7 @@ int main(int argc, char *argv[]) {
     unordered_map<int, LinkedList> adj;
     unordered_map<int, pair<bool, bool>> visited;
     auto inputReader = InputReader(inputFileName);
-    inputReader.readFile(&adj, &visited);
+    inputReader.readFile(&adj, &visited, &MAX_NODE);
 
 //    printGraph(&adj);
 
@@ -170,7 +174,7 @@ int main(int argc, char *argv[]) {
 //    printAnswer(ans, &adj);
 
     auto outputWriter = OutputWriter(outputFileName);
-    outputWriter.writeFile(ans, &adj);
+    outputWriter.writeFile(ans, &adj, MAX_NODE + 1);
 
     return 0;
 }

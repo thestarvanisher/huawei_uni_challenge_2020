@@ -8,7 +8,7 @@ OutputWriter::OutputWriter(char *fileName) {
     this->fileName = fileName;
 }
 
-void OutputWriter::writeFile(double *ans, unordered_map<int, LinkedList> *adj) {
+void OutputWriter::writeFile(double *ans, unordered_map<int, LinkedList> *adj, int NUM_NODES) {
     ofstream answerFile;
 
     answerFile.open(fileName, ios::trunc);
@@ -17,7 +17,7 @@ void OutputWriter::writeFile(double *ans, unordered_map<int, LinkedList> *adj) {
     bool first = false;
 
 
-    for(auto i: *adj) {
+    /*for(auto i: *adj) {
         if((*adj)[i.first].isEmpty() == false) {
             if(first) {
                 answerFile << ",";
@@ -25,6 +25,16 @@ void OutputWriter::writeFile(double *ans, unordered_map<int, LinkedList> *adj) {
             first = true;
 
             answerFile << "(" << i.first << "," << ans[i.first] << ")";
+        }
+    }*/
+    for(int i = 0; i < NUM_NODES; i++) {
+        if(adj->find(i) != adj->end()) {
+            if(first) {
+                answerFile << ",";
+            }
+            first = true;
+
+            answerFile << "(" << i << "," << ans[i] << ")";
         }
     }
 

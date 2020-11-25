@@ -1,1 +1,1 @@
-g++ ../include/*.cpp main.cpp -o main
+g++ -O3 ../include/*.cpp main.cpp -o main

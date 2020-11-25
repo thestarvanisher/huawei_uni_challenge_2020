@@ -19,5 +19,5 @@ private:
 public:
     explicit OutputWriter(char *fileName);
 
-    void writeFile(double *ans, unordered_map<int, LinkedList> *adj);
+    void writeFile(double *ans, unordered_map<int, LinkedList> *adj, int NUM_NODES);
 };

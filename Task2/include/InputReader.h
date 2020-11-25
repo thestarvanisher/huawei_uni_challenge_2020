@@ -31,5 +31,5 @@ private:
 public:
     explicit InputReader(char *fileName);
 
-    void readFile(unordered_map<int, LinkedList> *adj, unordered_map<int, pair<bool, bool>> *visited);
+    void readFile(unordered_map<int, LinkedList> *adj, unordered_map<int, pair<bool, bool>> *visited, int *MAX_NODE);
 };

@@ -8,7 +8,7 @@ InputReader::InputReader(char *fileName) {
     this->fileName = fileName;
 }
 
-void InputReader::readFile(unordered_map<int, LinkedList> *adj, unordered_map<int, pair<bool, bool>> *visited) {
+void InputReader::readFile(unordered_map<int, LinkedList> *adj, unordered_map<int, pair<bool, bool>> *visited, int *MAX_NODE) {
     int fileDescriptor;
 
     struct stat s;
@@ -67,8 +67,11 @@ void InputReader::readFile(unordered_map<int, LinkedList> *adj, unordered_map<in
             //adj->at(l).push_back(r);
             Node *p = new Node(r);
             (*adj)[l].addElement(p);
+            //Node *g = new Node(l);
+            //(*adj)[r].addElement(g);
+            (*adj)[r];
 
-            //maxNode = max(max(l, maxNode), r);
+            maxNode = max(max(l, maxNode), r);
 
             l = 0;
             r = 0;
@@ -90,10 +93,11 @@ void InputReader::readFile(unordered_map<int, LinkedList> *adj, unordered_map<in
         }
     }*/
 
-    for(auto i: *adj) {
-        //visited->insert(make_pair(i.first, make_pair(false, false)));
+    /*for(auto i: *adj) {
         (*visited)[i.first] = make_pair(false, false);
-    }
-
-    cout << "Graph Size: " << adj->size() << endl;
+    }*/
+    
+    *MAX_NODE = maxNode;
+    //cout << "Graph Size: " << adj->size() << endl;
+   
 }
