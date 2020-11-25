@@ -8,7 +8,6 @@
 #include <cmath>
 #include <cstring>
 #include <limits>
-#include <filesystem>
 #include "../include/OutputWriter.h"
 #include "../include/Bag.h"
 #include "../include/InputReader.h"
@@ -152,12 +151,8 @@ int main(int argc, char *argv[]) {
     unordered_map<int, LinkedList> adj;
     unordered_map<int, pair<bool, bool>> visited;
     auto inputReader = InputReader(inputFileName);
-
-    std::filesystem::path p{inputFileName};
-
     inputReader.readFile(&adj, &visited, &MAX_NODE);
 
-    cout << std::filesystem::file_size(p) << " bytes." << endl;
     cout << adj.size() << " nodes." << endl;
 
     double *ans = doGraphShit(&adj);
