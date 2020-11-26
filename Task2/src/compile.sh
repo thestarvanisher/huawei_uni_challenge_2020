@@ -1,1 +1,1 @@
-g++ -O3 ../include/*.cpp main.cpp -o main
+g++ -O3 -pthread ../include/*.cpp main.cpp -o main

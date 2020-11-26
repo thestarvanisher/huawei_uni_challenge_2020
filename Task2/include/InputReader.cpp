@@ -21,7 +21,7 @@ void InputReader::readFile(unordered_map<int, LinkedList> *adj/*, unordered_map<
     fileDescriptor = open(fileName, O_RDONLY);
 
     if (fileDescriptor < 0) {
-        cout << "There was an error opening the file!   " << endl;
+        cout << "There was an error opening the file!" << endl;
         exit(EXIT_FAILURE);
     }
 
