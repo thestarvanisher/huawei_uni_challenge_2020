@@ -4,11 +4,12 @@
 
 #include "InputReader.h"
 
+
 InputReader::InputReader(char *fileName) {
     this->fileName = fileName;
 }
 
-void InputReader::readFile(unordered_map<int, LinkedList> *adj, unordered_map<int, pair<bool, bool>> *visited, int *MAX_NODE) {
+void InputReader::readFile(unordered_map<int, LinkedList> *adj/*, unordered_map<int, pair<bool, bool>> *visited*/, int *MAX_NODE) {
     int fileDescriptor;
 
     struct stat s;
@@ -70,6 +71,7 @@ void InputReader::readFile(unordered_map<int, LinkedList> *adj, unordered_map<in
             //Node *g = new Node(l);
             //(*adj)[r].addElement(g);
             (*adj)[r];
+            //(*q).push(l);
 
             maxNode = max(max(l, maxNode), r);
 

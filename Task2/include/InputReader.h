@@ -21,6 +21,7 @@
 #include <thread>
 #include <exception>
 #include "LinkedList.h"
+#include <queue>
 
 using namespace std;
 
@@ -31,5 +32,5 @@ private:
 public:
     explicit InputReader(char *fileName);
 
-    void readFile(unordered_map<int, LinkedList> *adj, unordered_map<int, pair<bool, bool>> *visited, int *MAX_NODE);
+    void readFile(unordered_map<int, LinkedList> *adj/*, unordered_map<int, pair<bool, bool>> *visited*/, int *MAX_NODE);
 };
