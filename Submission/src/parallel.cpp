@@ -11,14 +11,21 @@
 #include "../include/OutputWriter.h"
 #include "../include/Bag.h"
 #include "../include/InputReader.h"
-
+#include <thread>
+#include <mutex>
+#include <iostream>
+#include <chrono>
 #define PARAM_IN 1
 
 #define PARAM_NUMBER 2
 
+#define NUM_THREADS 48
+
 using namespace std;
 
 int MAX_NODE;
+double *ANS;
+mutex *mtx;
 
 void printGraph(unordered_map<int, LinkedList> *adj) {
     for (auto i: *adj) {
@@ -32,12 +39,12 @@ void printGraph(unordered_map<int, LinkedList> *adj) {
     }
 }
 
-double *doGraphShit(unordered_map<int, LinkedList> *adj) {
+void doGraphShit(unordered_map<int, LinkedList> *adj, vector<int> *ranges, int starting, int ending) {
     vector<int> *P;
     int *sigma;
     int *d;
     double *delta;
-    double *ans;
+    //double *ans;
 
     stack<int> S;
     queue<int> Q;
@@ -48,16 +55,21 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
     delta = new double[maxNode];
     sigma = new int[maxNode];
     P = new vector<int>[maxNode];
-    ans = new double[maxNode];
+    //ans = new double[maxNode];
 
-    for (auto i: *adj) {
-        int currentNode = i.first;
+    //for (auto i: *adj) {
+    for(int i = starting; i < ending; i++) {
+
+        int currentNode = (*ranges)[i];
         memset(sigma, 0, sizeof(int) * maxNode);
         memset(d, -1, sizeof(int) * maxNode);
         memset(delta, 0, sizeof(double) * maxNode);
+        //auto t11 = chrono::high_resolution_clock::now();
         for (int j = 0; j < maxNode; j++) {
             P[j].clear();
         }
+        //auto t12 = chrono::high_resolution_clock::now();
+        //cout << "Clearing takes: " << chrono::duration_cast<chrono::milliseconds>(t12 - t11).count() << endl;
 
         sigma[currentNode] = 1;
         d[currentNode] = 0;
@@ -106,12 +118,14 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
             }
 
             if (w != currentNode) {
-                ans[w] += delta[w];
+                //ans[w] += delta[w];
+                lock_guard<mutex> lock(mtx[w]);
+                ANS[w] += delta[w];
             }
         }
     }
 
-    double maxNum = 0;
+    /*double maxNum = 0;
     double minNum = numeric_limits<double>::max();
 
     for (int i = 0; i < maxNode; i++) {
@@ -124,12 +138,14 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
     }
 
     return ans;
+    */
 }
 
 void printAnswer(const double *ans, unordered_map<int, LinkedList> *adj) {
     /*for (int i = 0; i < adj.size(); i++) {
         if (!adj.at(i).empty()) {
-            cout << i << " " << floor(ans[i] * 100) / 100 << endl;
+            cout << i << " " << floor(ans
+            [i] * 100) / 100 << endl;
         }
     }*/
     for (auto i: *adj) {
@@ -151,14 +167,72 @@ int main(int argc, char *argv[]) {
     unordered_map<int, LinkedList> adj;
     unordered_map<int, pair<bool, bool>> visited;
     auto inputReader = InputReader(inputFileName);
-    inputReader.readFile(&adj, &visited, &MAX_NODE);
+    inputReader.readFile(&adj, &MAX_NODE);
 
-    cout << adj.size() << " nodes." << endl;
+    
+    //cout << adj.size() << " nodes." << endl;
+    ANS = new double[MAX_NODE + 1];
+    mtx = new mutex[MAX_NODE + 1];
+    vector<int>ranges;
+    //int ranges[adj.size()];
+    //int j = 0;
+    for(auto i: adj) {
+        //ranges[j] = i.first;
+        ranges.push_back(i.first);
+        //j++;
+    }
+    //auto st = chrono::high_resolution_clock::now();
+    vector<thread> threads;
+    // for(int i = 0; i < MAX_NODE + 1; i++) {
+    //     if(adj.find(i) != adj.end()) {
+    //         thread t (doGraphShit, &adj, i);
+    //         threads.push_back(move(t));
+    //     }
+    // }
+    //auto st = chrono::high_resolution_clock::now();
+    for(int i = 0; i < (NUM_THREADS - 1); i++) {
+        int s = (int)((adj.size()*i)/NUM_THREADS);
+        int e = (int)((adj.size()*(i + 1))/NUM_THREADS);
 
-    double *ans = doGraphShit(&adj);
+        thread t(doGraphShit, &adj, &ranges, s, e);
+        threads.push_back(move(t));
+    }
+    int ss = (int)((adj.size()*(NUM_THREADS - 1))/NUM_THREADS);
+    thread g(doGraphShit, &adj, &ranges, ss, adj.size());
+    threads.push_back(move(g));
 
+
+    // for(auto i: adj) {
+    //     thread t (doGraphShit, ref(adj), (int)i.first);
+    //     threads.push_back(move(t));
+    // }
+    for(int i = 0; i <threads.size(); i++) {
+        threads[i].join();
+    }
+    //auto en = chrono::high_resolution_clock::now();
+    //cout<<"TIME: " << chrono::duration_cast<chrono::milliseconds>(en - st).count() << endl;
+    
+    double maxNum = 0;
+    double minNum = numeric_limits<double>::max();
+
+    for (int i = 0; i < MAX_NODE + 1; i++) {
+        maxNum = max(ANS[i], maxNum);
+        minNum = min(ANS[i], minNum);
+    }
+
+    for (int i = 0; i < MAX_NODE + 1; i++) {
+        ANS[i] = ((ANS[i] - minNum) / (maxNum - minNum));
+    }
+    
+    //cout<<"DONE"<<endl;
+
+    //double *ans = doGraphShit(&adj);
+
+    //auto st = chrono::high_resolution_clock::now();
     auto outputWriter = OutputWriter();
-    outputWriter.writeFile(ans, &adj, MAX_NODE + 1);
+    outputWriter.writeFile(ANS, &adj, MAX_NODE + 1);
+    //auto en = chrono::high_resolution_clock::now();
+    //cout<<"TIME: " << chrono::duration_cast<chrono::milliseconds>(en - st).count() << endl;
 
     return 0;
 }
