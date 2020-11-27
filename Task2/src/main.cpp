@@ -111,7 +111,7 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
         }
     }
 
-    double maxNum = 0;
+    double maxNum = 0.00;
     double minNum = numeric_limits<double>::max();
 
     for (int i = 0; i < maxNode; i++) {
@@ -119,10 +119,17 @@ double *doGraphShit(unordered_map<int, LinkedList> *adj) {
         minNum = min(ans[i], minNum);
     }
 
-    for (int i = 0; i < maxNode; i++) {
-        ans[i] = ((ans[i] - minNum) / (maxNum - minNum));
+    if(minNum == maxNum) {
+        for (int i = 0; i < maxNode; i++) {
+            ans[i] = (double)0.00;
+        }
     }
-
+    else {
+        for (int i = 0; i < maxNode; i++) {
+            ans[i] = ((ans[i] - minNum) / (maxNum - minNum));
+        }
+    }
+    
     return ans;
 }
 
@@ -149,11 +156,11 @@ int main(int argc, char *argv[]) {
     char *inputFileName = argv[PARAM_IN];
 
     unordered_map<int, LinkedList> adj;
-    unordered_map<int, pair<bool, bool>> visited;
+    //unordered_map<int, pair<bool, bool>> visited;
     auto inputReader = InputReader(inputFileName);
-    inputReader.readFile(&adj, &visited, &MAX_NODE);
+    inputReader.readFile(&adj, &MAX_NODE);
     
-    cout << adj.size() << " nodes." << endl;
+    //cout << adj.size() << " nodes." << endl;
 
     double *ans = doGraphShit(&adj);
 
@@ -162,3 +169,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
