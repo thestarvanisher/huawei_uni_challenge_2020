@@ -19,7 +19,7 @@
 
 #define PARAM_NUMBER 2
 
-#define NUM_THREADS 8
+#define NUM_THREADS 96
 
 using namespace std;
 
@@ -242,9 +242,17 @@ int main(int argc, char *argv[]) {
         minNum = min(ANS[i], minNum);
     }
 
-    for (int i = 0; i < MAX_NODE + 1; i++) {
-        ANS[i] = ((ANS[i] - minNum) / (maxNum - minNum));
+    if(minNum == maxNum) {
+        for (int i = 0; i < MAX_NODE + 1; i++) {
+            ANS[i] = (double)0.0;
+        }   
     }
+    else {
+        for (int i = 0; i < MAX_NODE + 1; i++) {
+            ANS[i] = ((ANS[i] - minNum) / (maxNum - minNum));
+        }   
+    }
+    
     
     //cout<<"DONE"<<endl;
 
@@ -258,3 +266,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
