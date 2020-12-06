@@ -14,17 +14,6 @@ void OutputWriter::writeFile(double *ans, unordered_map<int, LinkedList> *adj, i
 
     bool first = false;
 
-
-    /*for(auto i: *adj) {
-        if((*adj)[i.first].isEmpty() == false) {
-            if(first) {
-                answerFile << ",";
-            }
-            first = true;
-
-            answerFile << "(" << i.first << "," << ans[i.first] << ")";
-        }
-    }*/
     for (int i = 0; i < NUM_NODES; i++) {
         if (adj->find(i) != adj->end()) {
             if (first) {
@@ -35,18 +24,6 @@ void OutputWriter::writeFile(double *ans, unordered_map<int, LinkedList> *adj, i
             answerFile << "(" << i << "," << ans[i] << ")";
         }
     }
-
-    /*for (int i = 0; i < adj->size(); i++) {
-        if (!adj->at(i).empty()) {
-            if (first) {
-                answerFile << ",";
-            }
-            first = true;
-
-            answerFile << "(" << i << "," << ans[i] << ")";
-        }
-    }*/
-
 
     answerFile << "]";
     answerFile.close();
